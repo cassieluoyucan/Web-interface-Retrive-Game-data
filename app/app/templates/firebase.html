@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block style %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='select2/css/select2.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='datetime-picker/jquery.datetimepicker.min.css') }}">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+<h1 class="text-center">{{title}}</h1>
+    <hr>
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+    {% from 'bootstrap/form.html' import render_form %}
+    {{ render_form(form, button_map={'submit': 'primary'}) }}
+    </div>
+</div>
+{% if plot_data|length > 1 %}<div id="plot" style="height: 500px"></div>{% endif %}
+<p class="text-center">
+    {% if tag %}
+        Display Num {{ display_num }}/ Total Num {{ total_num }}
+    {% endif %}
+</p>
+<table class="table" role="table">
+    <thead class="bg-info text-white">
+    <tr>
+        <th>App Id</th>
+        <th>Name</th>
+        <th>Release Date</th>
+{#        <th>English</th>#}
+{#        <th>Developer</th>#}
+{#        <th>Publisher</th>#}
+{#        <th>Platforms</th>#}
+{#        <th>Required Age</th>#}
+        <th>Categories</th>
+        <th>Genres</th>
+{#        <th>Steamspy Tags</th>#}
+{#        <th>Achievements</th>#}
+{#        <th>Positive Ratings</th>#}
+{#        <th>Negative Ratings</th>#}
+        <th>Average Playtime</th>
+        <th>Median Playtime</th>
+{#        <th>Owners</th>#}
+        <th>Price</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% if results %}
+    {% for rec in results %}
+        <tr>
+        <td>{{ rec.appid }}</td>
+        <td>{{ rec.name }}</td>
+        <td>{{ rec.release_date.strftime("%Y-%m-%d") }}</td>
+        <td>
+            <ul>
+                {% for c in rec.categories %}
+                <li>{{ c }}</li>
+                {% endfor %}
+            </ul>
+        </td>
+        <td>
+            <ul>
+                {% for g in rec.genres %}
+                <li>{{ g }}</li>
+                {% endfor %}
+            </ul>
+        </td>
+        <td>
+            {{ rec.average_playtime }}
+        </td>
+        <td>
+            {{ rec.median_playtime }}
+        </td>
+        <td>
+            {{ rec.price }}
+        </td>
+        </tr>
+    {% endfor %}
+    {% else %}
+        <tr>
+        <td colspan="8" align="center">No Results</td>
+        </tr>
+    {% endif %}
+    </tbody>
+</table>
+
+</div>
+{% endblock %}
+
+
+{% block script %}
+    <script type="application/javascript" src="{{ url_for('static', filename='echarts.min.js') }}"></script>
+    <script type="application/javascript" src="{{ url_for('static', filename='select2/js/select2.full.min.js') }}"></script>
+    <script type="application/javascript" src="{{ url_for('static', filename='datetime-picker/jquery.datetimepicker.full.min.js') }}"></script>
+    <script>
+    let categorySelector = $('#category');
+    let genreSelector = $('#genre');
+    $(document).ready(function () {
+
+        categorySelector.select2({
+            AllowClear: true
+        });
+        genreSelector.select2({
+            AllowClear: true
+        });
+
+        categorySelector.trigger('change');
+        genreSelector.trigger('change');
+
+         $('#date_from').datetimepicker({
+             timepicker:false,
+             format:'Y-m-d',
+         });
+         $('#date_to').datetimepicker({
+             timepicker:false,
+             format:'Y-m-d',
+         });
+    });
+
+    </script>
+    {% if plot_data|length > 1 %}
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-gl/dist/echarts-gl.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-stat/dist/ecStat.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/dataTool.min.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>
+       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/extension/bmap.min.js"></script>
+        <script type="text/javascript">
+        var dom = document.getElementById("plot");
+        var myChart = echarts.init(dom);
+        window.onresize = function () {
+            myChart.resize()
+        };
+
+        var app = {};
+        option = null;
+        option = {
+            legend: {},
+            tooltip: {},
+            dataset: {
+            source: {{plot_data|safe}}
+    },
+    xAxis: {type: 'category'},
+    yAxis: {},
+    // Declare several bar series, each will be mapped
+    // to a column of dataset.source by default.
+    series: [
+        {type: 'bar'},
+        {type: 'bar'},
+    ]
+};
+
+if (option && typeof option === "object") {
+    myChart.setOption(option, true);
+}
+       </script>
+    {% endif %}
+{% endblock %}

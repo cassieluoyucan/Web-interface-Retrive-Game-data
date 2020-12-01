@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+
+{% block style %}
+    <style>
+body{
+    width: 100vw;
+    height: 100vh;
+    background: #e6e6e6;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    cursor: pointer;
+    background-image: url(/static/img/bg.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+    </style>
+{% endblock %}
+
+
+{% block content %}
+<h1 class="text-center"> Welcome To Our Web</h1>
+    <hr>
+    <a href="{{ url_for('firebase') }}" class="btn btn-outline-danger">Goto steam data</a>
+{% endblock %}
